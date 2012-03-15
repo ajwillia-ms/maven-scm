@@ -82,7 +82,7 @@ public class HgCommandConstants
     public static final String LOG_CMD = "log";
 
     /**
-     * Show differences in workingtree. Common option: --revision
+     * Show differences in workingtree. Common option: --revision, --git
      */
     public static final String DIFF_CMD = "diff";
 
@@ -115,7 +115,13 @@ public class HgCommandConstants
 
     public static final String REVISION_OPTION = "-r";
 
+    public static final String REVISION_TO_PARENT_OPTION = "-c";
+
+    public static final String REVISION_NUMBER_OPTION = "-n";
+
     public static final String VERBOSE_OPTION = "--verbose";
+
+    public static final String EXTENDED_PATCH_OPTION = "--git";
 
     public static final String VERSION = "version";
 

@@ -24,6 +24,7 @@ import org.apache.maven.scm.ChangeSet;
 import org.apache.maven.scm.ScmFileStatus;
 import org.apache.maven.scm.log.ScmLogger;
 import org.apache.maven.scm.provider.hg.command.HgConsumer;
+import org.codehaus.plexus.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -203,7 +204,7 @@ public class HgChangeLogConsumer
             for ( int i = 0; i < files.length; i++ )
             {
                 String file = files[i];
-                ChangeFile changeFile = new ChangeFile( file, currentRevision );
+                ChangeFile changeFile = new ChangeFile( file, currentChange.getRevision() );
                 currentChange.addFile( changeFile );
             }
         }
@@ -211,7 +212,10 @@ public class HgChangeLogConsumer
         {
             if ( getLogger().isWarnEnabled() )
             {
-                getLogger().warn( "Could not figure out: " + line );
+                if ( !StringUtils.isEmpty( line ) )
+                {
+                    getLogger().warn( "Could not figure out: " + line );
+                }
             }
         }
 

@@ -48,15 +48,25 @@ public class HgDiffCommand
         if ( startRevision != null && !StringUtils.isEmpty( startRevision.getName() ) )
         {
             String revArg = startRevision.getName();
+            String revOpt = HgCommandConstants.REVISION_OPTION;
             if ( endRevision != null && !StringUtils.isEmpty( endRevision.getName() ) )
             {
-                revArg += ".." + endRevision;
+                if ( revArg.equals( endRevision.getName() + "^" ) || revArg.equals( endRevision.getName() + "^1" ) )
+                {
+                    revOpt = HgCommandConstants.REVISION_TO_PARENT_OPTION;
+                    revArg = endRevision.getName();
+                }
+                else
+                {
+                    revArg += ":" + endRevision.getName();
+                }
             }
-            diffCmd = new String[] { HgCommandConstants.DIFF_CMD, HgCommandConstants.REVISION_OPTION, revArg };
+            diffCmd = new String[] { HgCommandConstants.DIFF_CMD, HgCommandConstants.EXTENDED_PATCH_OPTION,
+                    revOpt, revArg };
         }
         else
         {
-            diffCmd = new String[] { HgCommandConstants.DIFF_CMD };
+            diffCmd = new String[] { HgCommandConstants.DIFF_CMD, HgCommandConstants.EXTENDED_PATCH_OPTION };
         }
 
         diffCmd = HgUtils.expandCommandLine( diffCmd, fileSet );

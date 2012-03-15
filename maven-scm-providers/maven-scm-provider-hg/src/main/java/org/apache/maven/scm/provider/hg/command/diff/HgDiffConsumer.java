@@ -23,6 +23,8 @@ import org.apache.maven.scm.ScmFile;
 import org.apache.maven.scm.ScmFileStatus;
 import org.apache.maven.scm.log.ScmLogger;
 import org.apache.maven.scm.provider.hg.command.HgConsumer;
+import org.apache.regexp.RE;
+import org.apache.regexp.RESyntaxException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,7 +42,12 @@ public class HgDiffConsumer
 
     // private static final String MODIFIED_FILE_TOKEN = "=== modified file ";
 
-    private static final String INDEX_TOKEN = "diff -r ";
+    /**
+     * patern matches the index line of the diff comparison
+     * paren.1 matches the first file
+     * paren.2 matches the 2nd file
+     */
+    private static final String DIFF_FILES_PATTERN = "^diff --git\\sa/(.*)\\sb/(.*)";
 
     private static final String FILE_SEPARATOR_TOKEN = "===";
 
@@ -58,6 +65,12 @@ public class HgDiffConsumer
 
     private static final String NO_NEWLINE_TOKEN = "\\ No newline at end of file";
 
+    private static final String INDEX_LINE_TOKEN = "index ";
+
+    private static final String NEW_FILE_MODE_TOKEN = "new file mode ";
+
+    private static final String DELETED_FILE_MODE_TOKEN = "deleted file mode ";
+    
     private static final int HASH_ID_LEN = 12;
 
     private ScmLogger logger;
@@ -65,6 +78,8 @@ public class HgDiffConsumer
     private String currentFile;
 
     private StringBuffer currentDifference;
+
+    private ScmFile currentScmFile;
 
     private List changedFiles = new ArrayList();
 
@@ -74,12 +89,27 @@ public class HgDiffConsumer
 
     private File workingDirectory;
 
+    /**
+     * @see #DIFF_FILES_PATTERN
+     */
+    private RE filesRegexp;
 
     public HgDiffConsumer( ScmLogger logger, File workingDirectory )
     {
         super( logger );
         this.logger = logger;
         this.workingDirectory = workingDirectory;
+
+        try
+        {
+            filesRegexp = new RE( DIFF_FILES_PATTERN );
+        }
+        catch ( RESyntaxException ex )
+        {
+            throw new RuntimeException(
+                                        "INTERNAL ERROR: Could not create regexp to parse hg log file. Something is probably wrong with the oro installation.",
+                                        ex );
+        }
     }
 
     // ----------------------------------------------------------------------
@@ -89,12 +119,13 @@ public class HgDiffConsumer
     /** {@inheritDoc} */
     public void consumeLine( String line )
     {
-        if ( line.startsWith( INDEX_TOKEN ) )
+        if ( filesRegexp.match( line ) )
         {
             // start a new file
-            currentFile = line.substring( INDEX_TOKEN.length() + HASH_ID_LEN + 1 );
+            currentFile = filesRegexp.getParen( 1 );
 
-            changedFiles.add( new ScmFile( currentFile, ScmFileStatus.MODIFIED ) );
+            currentScmFile = new ScmFile( currentFile, ScmFileStatus.MODIFIED );
+            changedFiles.add( currentScmFile );
 
             currentDifference = new StringBuffer();
 
@@ -118,6 +149,29 @@ public class HgDiffConsumer
         if ( line.startsWith( FILE_SEPARATOR_TOKEN ) )
         {
             // skip
+            patch.append( line ).append( "\n" );
+        }
+        else if ( line.startsWith( INDEX_LINE_TOKEN ) )
+        {
+            // skip, though could parse to verify start revision and end revision
+            patch.append( line ).append( "\n" );
+        }
+        else if ( line.startsWith( NEW_FILE_MODE_TOKEN ) )
+        {
+            changedFiles.remove( currentScmFile );
+            currentScmFile = new ScmFile( currentFile, ScmFileStatus.ADDED );
+            changedFiles.add( currentScmFile );
+
+            // could parse to verify file mode
+            patch.append( line ).append( "\n" );
+        }
+        else if ( line.startsWith( DELETED_FILE_MODE_TOKEN ) )
+        {
+            changedFiles.remove( currentScmFile );
+            currentScmFile = new ScmFile( currentFile, ScmFileStatus.DELETED );
+            changedFiles.add( currentScmFile );
+
+            // could parse to verify file mode
             patch.append( line ).append( "\n" );
         }
         else if ( line.startsWith( START_REVISION_TOKEN ) )
