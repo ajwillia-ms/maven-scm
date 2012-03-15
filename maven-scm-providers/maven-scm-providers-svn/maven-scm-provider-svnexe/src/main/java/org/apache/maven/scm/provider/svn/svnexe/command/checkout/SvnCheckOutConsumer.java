@@ -39,10 +39,14 @@ public class SvnCheckOutConsumer
     private static final String CHECKED_OUT_REVISION_TOKEN = "Checked out revision";
 
     private List files = new ArrayList();
-    
+    private File myDirectory;
+
+    private boolean filtered;
+
     public SvnCheckOutConsumer( ScmLogger logger, File workingDirectory )
     {
-        super( logger, workingDirectory );
+        super( logger, workingDirectory.getParentFile() );
+        myDirectory = workingDirectory;
     }
     
     /** {@inheritDoc} */
@@ -51,6 +55,11 @@ public class SvnCheckOutConsumer
         String statusString = line.substring( 0, 1 );
 
         String file = line.substring( 3 ).trim();
+        //[SCM-368]
+        if ( file.startsWith( myDirectory.getAbsolutePath() ) )
+        {
+            file = file.substring( this.myDirectory.getAbsolutePath().length() + 1 );
+        }
 
         ScmFileStatus status;
 
@@ -96,19 +105,23 @@ public class SvnCheckOutConsumer
 
     protected List getFiles()
     {
-        List onlyFiles = new ArrayList();
-        for ( Iterator it = files.iterator(); it.hasNext(); )
-        {
-            ScmFile file = (ScmFile) it.next();
+//        if ( !filtered )
+//        {
+//            for ( Iterator it = files.iterator(); it.hasNext(); )
+//            {
+//                ScmFile file = (ScmFile) it.next();
+//
+//                if ( !file.getStatus().equals( ScmFileStatus.DELETED )
+//                    && !new File( myDirectory, file.getPath() ).isFile() )
+//                {
+//                    it.remove();
+//                }
+//            }
+//
+//            filtered = true;
+//        }
 
-            if (!( !file.getStatus().equals( ScmFileStatus.DELETED )
-                && !new File( file.getPath() ).isFile() ))
-            {
-                onlyFiles.add( file );
-            }
-        }
-
-        return onlyFiles;
+        return files;
     }        
-        
+
 }
