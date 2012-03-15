@@ -99,6 +99,16 @@
   </issueManagement>
 
   <distributionManagement>
+    <repository>
+      <id>headsupdev-external</id>
+      <url>dav:http://headsupdev.org/repository/external/</url>
+    </repository>
+
+    <snapshotRepository>
+      <id>headsupdev-snapshot</id>
+      <url>dav:http://headsupdev.org/repository/snapshot/</url>
+    </snapshotRepository>
+
     <site>
       <id>apache.website</id>
       <url>scp://people.apache.org/www/maven.apache.org/scm/</url>
