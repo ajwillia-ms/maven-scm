@@ -75,6 +75,7 @@ public class HgUpdateCommand
         int previousRevision = currentRevision - 1;
         String[] diffCmd = new String[] {
             HgCommandConstants.DIFF_CMD,
+            HgCommandConstants.EXTENDED_PATCH_OPTION,
             HgCommandConstants.REVISION_OPTION,
             "" + previousRevision };
         HgDiffConsumer diffConsumer = new HgDiffConsumer( getLogger(), workingDir );
@@ -99,7 +100,10 @@ public class HgUpdateCommand
             }
         }
         
-        String[] hgUpdateCmd = new String[] { HgCommandConstants.UPDATE_CMD };
+        String[] hgUpdateCmd = new String[] { HgCommandConstants.UPDATE_CMD,
+            HgCommandConstants.REVISION_OPTION,
+            tag != null && !StringUtils.isEmpty( tag.getName() ) ? tag.getName() : "tip" };
+
         HgUtils.execute( new HgConsumer( getLogger() ), getLogger(), workingDir, hgUpdateCmd );
 
         return new UpdateScmResultWithRevision( updatedFiles, changes, String.valueOf( currentRevision ), diffResult );

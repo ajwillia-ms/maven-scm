@@ -75,12 +75,15 @@ public class HgCheckOutCommand
             url,
             checkoutDir.getAbsolutePath() };
         HgConsumer checkoutConsumer = new HgConsumer( getLogger() );
-        HgUtils.execute( checkoutConsumer, getLogger(), checkoutDir.getParentFile(), checkoutCmd );
+        ScmResult result = HgUtils.execute( checkoutConsumer, getLogger(), checkoutDir.getParentFile(), checkoutCmd );
 
-        // Do inventory to find list of checkedout files
-        String[] inventoryCmd = new String[] { HgCommandConstants.INVENTORY_CMD };
         HgCheckOutConsumer consumer = new HgCheckOutConsumer( getLogger(), checkoutDir );
-        ScmResult result = HgUtils.execute( consumer, getLogger(), checkoutDir, inventoryCmd );
+        if ( result.isSuccess() )
+        {
+            // Do inventory to find list of checkedout files
+            String[] inventoryCmd = new String[] { HgCommandConstants.INVENTORY_CMD };
+            result = HgUtils.execute( consumer, getLogger(), checkoutDir, inventoryCmd );
+        }
 
         return new CheckOutScmResult( consumer.getCheckedOutFiles(), result );
     }

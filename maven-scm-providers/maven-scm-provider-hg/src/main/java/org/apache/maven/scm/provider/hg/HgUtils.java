@@ -197,7 +197,7 @@ public class HgUtils
         throws ScmException
     {
 
-        String[] revCmd = new String[]{HgCommandConstants.REVNO_CMD};
+        String[] revCmd = new String[]{HgCommandConstants.REVNO_CMD, HgCommandConstants.REVISION_NUMBER_OPTION};
         HgRevNoConsumer consumer = new HgRevNoConsumer( logger );
         HgUtils.execute( consumer, logger, workingDir, revCmd );
 
