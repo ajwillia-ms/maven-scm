@@ -112,6 +112,18 @@ public class GitCheckOutCommand
             return new CheckOutScmResult( cl.toString(), "The git-checkout command failed.", stderr.getOutput(), false );
         }
 
+        // update any submodules
+        cl = createSubmodulesUpdateCommand( repository, fileSet.getBasedir() );
+
+        exitCode = GitCommandLineUtils.execute( cl, stdout, stderr, getLogger() );
+        if ( exitCode != 0 )
+        {
+            if ( getLogger().isWarnEnabled() )
+            {
+                getLogger().warn( "failed to update git submodule, return code " + exitCode );
+            }
+        }
+
         // and now search for the files
         GitListConsumer listConsumer = new GitListConsumer( getLogger(), fileSet.getBasedir(), ScmFileStatus.CHECKED_IN );
 
@@ -195,6 +207,19 @@ public class GitCheckOutCommand
             cl.createArg().setValue( repository.getFetchUrl() );
             cl.createArg().setValue( "master" );
         }
+        return cl;
+    }
+
+    /**
+     * create a git submodules update repository command
+     */
+    private Commandline createSubmodulesUpdateCommand( GitScmProviderRepository repository, File workingDirectory )
+    {
+        Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "submodule" );
+
+        cl.createArg().setValue( "update" );
+        cl.createArg().setValue( "--init" );
+
         return cl;
     }
 }
