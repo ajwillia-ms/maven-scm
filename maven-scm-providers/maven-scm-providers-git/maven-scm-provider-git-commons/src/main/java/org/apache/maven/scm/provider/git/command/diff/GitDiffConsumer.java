@@ -83,6 +83,8 @@ public class GitDiffConsumer
 
     private StringBuffer currentDifference;
 
+    private ScmFile currentScmFile;
+
     private List changedFiles = new ArrayList();
 
     private Map differences = new HashMap();
@@ -126,7 +128,8 @@ public class GitDiffConsumer
             // start a new file
             currentFile = filesRegexp.getParen( 1 );
 
-            changedFiles.add( new ScmFile( currentFile, ScmFileStatus.MODIFIED ) );
+            currentScmFile = new ScmFile( currentFile, ScmFileStatus.MODIFIED );
+            changedFiles.add( currentScmFile );
 
             currentDifference = new StringBuffer();
 
@@ -151,9 +154,22 @@ public class GitDiffConsumer
             // skip, though could parse to verify start revision and end revision
             patch.append( line ).append( "\n" );
         }
-        else if ( line.startsWith( NEW_FILE_MODE_TOKEN ) || line.startsWith( DELETED_FILE_MODE_TOKEN ) )
+        else if ( line.startsWith( NEW_FILE_MODE_TOKEN ) )
         {
-            // skip, though could parse to verify file mode
+            changedFiles.remove( currentScmFile );
+            currentScmFile = new ScmFile( currentFile, ScmFileStatus.ADDED );
+            changedFiles.add( currentScmFile );
+
+            // could parse to verify file mode
+            patch.append( line ).append( "\n" );
+        }
+        else if ( line.startsWith( DELETED_FILE_MODE_TOKEN ) )
+        {
+            changedFiles.remove( currentScmFile );
+            currentScmFile = new ScmFile( currentFile, ScmFileStatus.DELETED );
+            changedFiles.add( currentScmFile );
+
+            // could parse to verify file mode
             patch.append( line ).append( "\n" );
         }
         else if ( line.startsWith( START_REVISION_TOKEN ) )

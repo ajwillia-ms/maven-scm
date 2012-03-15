@@ -91,6 +91,16 @@ public class GitUpdateCommand
                                         stderr.getOutput(), false );
         }
         String latestRevision = consumerRev.getLatestRevision();
+
+        Commandline clUpdateSubrepos = createSubmodulesUpdateCommand( repository, fileSet.getBasedir() );
+        exitCode = GitCommandLineUtils.execute( clUpdateSubrepos, consumerRev, stderr, getLogger() );
+        if ( exitCode != 0 )
+        {
+            if ( getLogger().isWarnEnabled() )
+            {
+                getLogger().warn( "failed to update git submodule, return code " + exitCode );
+            }
+        }
         
         return new UpdateScmResultWithRevision( cl.toString(), consumer.getUpdatedFiles(), latestRevision );
     }
@@ -109,9 +119,9 @@ public class GitUpdateCommand
      */
     public static Commandline createCommandLine( GitScmProviderRepository repository, File workingDirectory, ScmVersion scmVersion ) 
     {
-        Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "pull" );
+        Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "checkout" );
         
-        cl.createArg().setLine( repository.getFetchUrl() );
+//        cl.createArg().setLine( repository.getFetchUrl() );
 
         // now set the branch where we would like to pull from
         if ( scmVersion instanceof ScmBranch )
@@ -120,7 +130,14 @@ public class GitUpdateCommand
         }
         else
         {
-            cl.createArg().setLine( "master" );
+            if ( scmVersion == null )
+            {
+                cl.createArg().setLine( "master" );
+            }
+            else
+            {
+                cl.createArg().setLine( scmVersion.getName() );
+            }
         }            
         
         return cl;
@@ -155,4 +172,17 @@ public class GitUpdateCommand
         
         return cl;
     }
+
+    /**
+     * create a git submodules update repository command
+     */
+    private Commandline createSubmodulesUpdateCommand( GitScmProviderRepository repository, File workingDirectory )
+    {
+        Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "submodule" );
+
+        cl.createArg().setValue( "update" );
+        
+        return cl;
+    }
+
 }

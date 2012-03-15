@@ -60,12 +60,15 @@ public class GitDiffCommand
                                       false );
         }
 
-        Commandline clDiff2Head = createCommandLine( fileSet.getBasedir(), startVersion, endVersion, true );
-
-        exitCode = GitCommandLineUtils.execute( clDiff2Head, consumer, stderr, getLogger() );
-        if ( exitCode != 0 )
+        if ( startVersion == null || endVersion == null )
         {
-            return new DiffScmResult( clDiff2Head.toString(), "The git-diff command failed.", stderr.getOutput(), false );
+            Commandline clDiff2Head = createCommandLine( fileSet.getBasedir(), startVersion, endVersion, true );
+
+            exitCode = GitCommandLineUtils.execute( clDiff2Head, consumer, stderr, getLogger() );
+            if ( exitCode != 0 )
+            {
+                return new DiffScmResult( clDiff2Head.toString(), "The git-diff command failed.", stderr.getOutput(), false );
+            }
         }
 
         return new DiffScmResult( clDiff2Index.toString(), consumer.getChangedFiles(), consumer.getDifferences(),
