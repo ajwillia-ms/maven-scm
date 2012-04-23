@@ -155,13 +155,16 @@ public class GitChangeLogCommand
         }
 
         // Insert a separator to make sure that files aren't interpreted as part of the version spec
-        cl.createArg().setValue( "--" );
+//        cl.createArg().setValue( "--" );
         
         // We have to report only the changes of the current project.
         // This is needed for child projects, otherwise we would get the changelog of the 
         // whole parent-project including all childs.
-        cl.createArg().setFile( workingDirectory );
-        
+//        cl.createArg().setFile( workingDirectory );
+
+        // also show merges, we want to know everything - it does not however work with the above switched on :(
+        cl.createArg().setValue( "-m" );
+
         return cl;
     }
 }
