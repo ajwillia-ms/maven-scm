@@ -65,7 +65,24 @@ public class GitUpdateCommand
 
         CommandLineUtils.StringStreamConsumer stderr = new CommandLineUtils.StringStreamConsumer();
 
-        Commandline cl = createCommandLine( repository, fileSet.getBasedir(), scmVersion );
+        Commandline cl;
+        if ( scmVersion != null )
+        {
+            // ensure we are up to date before we try to get a specific version
+            cl = createFetchCommandLine( repository, fileSet.getBasedir(), scmVersion );
+            exitCode = GitCommandLineUtils.execute( cl, consumer, stderr, getLogger() );
+            if ( exitCode != 0 )
+            {
+                if ( getLogger().isWarnEnabled() )
+                {
+                    getLogger().warn( "failed to fetch git, return code " + exitCode );
+                }
+                return new UpdateScmResult( cl.toString(), "The git-pull origin master command failed.",
+                                            stderr.getOutput(), false );
+            }
+        }
+ 
+        cl = createCommandLine( repository, fileSet.getBasedir(), scmVersion );
         exitCode = GitCommandLineUtils.execute( cl, consumer, stderr, getLogger() );
         if ( exitCode != 0 )
         {
@@ -113,6 +130,16 @@ public class GitUpdateCommand
         
         return changelogCmd;
     }
+
+    /**
+     * create the command line for pulling updates from the foreign repository. 
+     */
+    public static Commandline createFetchCommandLine( GitScmProviderRepository repository, File workingDirectory, ScmVersion scmVersion ) 
+    {
+        Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "fetch" );
+        
+        return cl;
+    }
     
     /**
      * create the command line for updating the current branch with the info from the foreign repository. 
@@ -121,8 +148,6 @@ public class GitUpdateCommand
     {
         Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "checkout" );
         
-//        cl.createArg().setLine( repository.getFetchUrl() );
-
         // now set the branch where we would like to pull from
         if ( scmVersion instanceof ScmBranch )
         {
@@ -132,7 +157,9 @@ public class GitUpdateCommand
         {
             if ( scmVersion == null )
             {
-                cl.createArg().setLine( "master" );
+                cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "pull" );
+
+                cl.createArg().setLine( repository.getFetchUrl() );
             }
             else
             {
