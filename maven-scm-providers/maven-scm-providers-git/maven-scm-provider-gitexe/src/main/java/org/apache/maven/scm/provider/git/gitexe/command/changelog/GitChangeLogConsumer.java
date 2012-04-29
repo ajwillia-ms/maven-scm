@@ -72,7 +72,7 @@ public class GitChangeLogConsumer
     /**
      * The pattern used to match git header lines
      */
-    private static final String HEADER_PATTERN = "^commit (.*)";
+    private static final String HEADER_PATTERN = "^commit (\\w*)";
 
     /**
      * The pattern used to match git author lines
@@ -218,8 +218,10 @@ public class GitChangeLogConsumer
         }
 
         currentRevision = headerRegexp.getParen( 1 );
+        // TODO do something with the merge revision at " (from xxx)" - could be pretty useful!
 
         currentChange = new GitChangeSet();
+        currentChange.setRevision( currentRevision );
 
         status = STATUS_GET_AUTHOR;
     }

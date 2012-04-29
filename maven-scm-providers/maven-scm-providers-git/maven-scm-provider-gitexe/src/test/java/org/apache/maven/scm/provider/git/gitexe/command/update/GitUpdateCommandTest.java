@@ -38,7 +38,7 @@ public class GitUpdateCommandTest
     public void testCommandLineNoBranch()
         throws Exception
     {
-        testCommandLine( "scm:git:http://foo.com/git", null, "git pull http://foo.com/git" );
+        testCommandLine( "scm:git:http://foo.com/git", null, "git pull http://foo.com/git master" );
     }
 
     public void testCommandLineWithBranch()

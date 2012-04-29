@@ -160,12 +160,13 @@ public class GitUpdateCommand
                 cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "pull" );
 
                 cl.createArg().setLine( repository.getFetchUrl() );
+                cl.createArg().setLine( "master" );
             }
             else
             {
                 cl.createArg().setLine( scmVersion.getName() );
             }
-        }            
+        }
         
         return cl;
     }
@@ -208,7 +209,8 @@ public class GitUpdateCommand
         Commandline cl = GitCommandLineUtils.getBaseGitCommandLine( workingDirectory, "submodule" );
 
         cl.createArg().setValue( "update" );
-        
+        cl.createArg().setValue( "--init" );
+
         return cl;
     }
 

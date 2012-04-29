@@ -29,7 +29,9 @@ import java.util.TimeZone;
 
 import org.apache.maven.scm.ChangeFile;
 import org.apache.maven.scm.ChangeSet;
+import org.apache.maven.scm.ScmResult;
 import org.apache.maven.scm.log.DefaultLog;
+import org.apache.maven.scm.provider.git.GitChangeSet;
 import org.apache.regexp.RE;
 import org.codehaus.plexus.PlexusTestCase;
 
@@ -158,5 +160,21 @@ public class GitChangeLogConsumerTest
                       cf.getName() );
         assertTrue( cf.getRevision() != null && cf.getRevision().length() > 0 );
     }
- 
+
+    public void testMergeRevision()
+        throws Exception
+    {
+        GitChangeLogConsumer consumer = new GitChangeLogConsumer( new DefaultLog(), null );
+
+        consumer.consumeLine( "commit 27ae238ef2d326e1eedbe7a04432eaeba9c0aabd" );
+
+        ChangeSet entry = (ChangeSet) consumer.getModifications().get( 0 );
+        assertEquals("27ae238ef2d326e1eedbe7a04432eaeba9c0aabd", entry.getRevision() );
+
+        consumer = new GitChangeLogConsumer( new DefaultLog(), null );
+        consumer.consumeLine( "commit bb96c269e66fb6b160e799aee75bca6d3c8dc795 (from 27ae238ef2d326e1eedbe7a04432eaeba9c0aabd)" );
+
+        entry = (ChangeSet) consumer.getModifications().get( 0 );
+        assertEquals("bb96c269e66fb6b160e799aee75bca6d3c8dc795", entry.getRevision());
+    }
 }

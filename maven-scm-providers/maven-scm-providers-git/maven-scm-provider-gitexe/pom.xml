@@ -29,7 +29,7 @@
   </parent>
 
   <artifactId>maven-scm-provider-gitexe</artifactId>
-  <version>1.3.3-headsup</version>
+  <version>1.3.4-headsup</version>
 
   <name>Maven SCM Git Provider - Git Executable Impl.</name>
   <description>Executable implementation for SCM Git Provider.</description>
